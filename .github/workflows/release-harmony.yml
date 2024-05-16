@@ -1,0 +1,13 @@
+name: release-harmony
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-harmony:
+    permissions:
+      contents: write
+
+    uses: ./.github/workflows/binary-release.yml
+    with:
+      PACKAGE_NAME: "harmony"
