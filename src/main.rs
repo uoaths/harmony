@@ -9,7 +9,7 @@ use tracing_subscriber;
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let port = env::var("PORT").unwrap_or("3000".into());
+    let address = env::var("ADDRESS").unwrap_or("127.0.0.1:3000".into());
 
     let cert_path = env::var("CERT_PATH");
     let key_path = env::var("KEY_PATH");
@@ -29,7 +29,7 @@ async fn main() {
         router
     };
 
-    let addr: SocketAddr = SocketAddr::from(([0, 0, 0, 0], port.parse().unwrap()));
+    let addr: SocketAddr = address.parse().unwrap();
 
     if cert_path.is_ok() && key_path.is_ok() {
         let config = RustlsConfig::from_pem_file(cert_path.unwrap(), key_path.unwrap())
