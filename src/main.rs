@@ -9,7 +9,7 @@ use tracing_subscriber;
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let address = env::var("ADDRESS").unwrap_or("127.0.0.1:3000".into());
+    let address = env::var("ADDRESS").unwrap_or("[::]:2053".into());
 
     let cert_path = env::var("CERT_PATH");
     let key_path = env::var("KEY_PATH");
