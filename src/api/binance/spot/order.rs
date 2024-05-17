@@ -100,12 +100,73 @@ pub mod post_order {
     }
 }
 
-mod place {
-    pub mod post_place {
-        pub const PATH: &str = "/binance/spot/order/place";
+pub mod buy {
+    pub mod post_buy {
+        pub const PATH: &str = "/binance/spot/order/buy";
+
+        use binance::types::{OrderResponseFull, OrderSide, Quantity, Symbol};
+        use serde::{Deserialize, Serialize};
+
+        use crate::api::http::request::Json;
+        use crate::api::http::response::{Response, ResponseResult};
+        use crate::api::http::trip::Trip;
+        use crate::services::binance::client_with_sign;
+
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct Payload {
+            api_key: String,
+            secret_key: String,
+            symbol: Symbol,
+            quote_quantity: Quantity,
+        }
+
+        type Reply = OrderResponseFull;
+
+        #[tracing::instrument(skip(_c))]
+        pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
+            let client = client_with_sign(p.api_key, p.secret_key)?;
+            let result = client
+                .spot_market_order_with_quote(&p.symbol, OrderSide::Buy, &p.quote_quantity, None)
+                .await?;
+
+            Ok(Response::ok(result))
+        }
     }
 }
 
+pub mod sell {
+    pub mod post_sell {
+        pub const PATH: &str = "/binance/spot/order/sell";
+
+        use binance::types::{OrderResponseFull, OrderSide, Quantity, Symbol};
+        use serde::{Deserialize, Serialize};
+
+        use crate::api::http::request::Json;
+        use crate::api::http::response::{Response, ResponseResult};
+        use crate::api::http::trip::Trip;
+        use crate::services::binance::client_with_sign;
+
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct Payload {
+            api_key: String,
+            secret_key: String,
+            symbol: Symbol,
+            base_quantity: Quantity,
+        }
+
+        type Reply = OrderResponseFull;
+
+        #[tracing::instrument(skip(_c))]
+        pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
+            let client = client_with_sign(p.api_key, p.secret_key)?;
+            let result = client
+                .spot_market_order_with_base(&p.symbol, OrderSide::Sell, &p.base_quantity, None)
+                .await?;
+
+            Ok(Response::ok(result))
+        }
+    }
+}
 
 mod check {
     pub mod post_check {

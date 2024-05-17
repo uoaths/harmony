@@ -23,5 +23,13 @@ pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
             spot::commission::post_commission::PATH,
             post(spot::commission::post_commission::handler),
         )
+        .route(
+            spot::order::buy::post_buy::PATH,
+            post(spot::order::buy::post_buy::handler),
+        )
+        .route(
+            spot::order::sell::post_sell::PATH,
+            post(spot::order::sell::post_sell::handler),
+        )
         .with_state(state)
 }
