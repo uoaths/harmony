@@ -82,6 +82,16 @@ pub mod post_order {
             }
 
             if position.selling_price.is_within(price) {
+                // filter: LOT_SIZE
+                // maxQty >= base_quantity >= minQty;
+                // base_quantity % stepSize == 0;
+                //
+                // leave_quantity = base_quantity % stepSize;
+                // sell_base_quantity = base_quantity - leave_quantity;
+
+
+                // filter: NOTIONAL
+                // maxNotional >= base_quantity * price >= minNotional
                 let selling_order = client
                     .spot_market_order_with_base(
                         &symbol,

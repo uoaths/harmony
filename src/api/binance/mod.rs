@@ -1,4 +1,5 @@
 mod spot;
+mod market;
 
 pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
     use axum::{
@@ -34,6 +35,10 @@ pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
         .route(
             spot::order::check::post_check::PATH,
             post(spot::order::check::post_check::handler),
+        )
+        .route(
+            market::norm::get_norm::PATH,
+            get(market::norm::get_norm::handler),
         )
         .with_state(state)
 }
