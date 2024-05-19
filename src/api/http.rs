@@ -141,6 +141,22 @@ pub mod response {
             }
         }
     }
+
+    #[cfg(feature = "binance")]
+    mod from_binance_filter_error {
+        use crate::services::binance::filter::error::SymbolFilterError;
+
+        use super::{Response, Serialize};
+
+        impl<T> From<SymbolFilterError> for Response<T>
+        where
+            T: Serialize,
+        {
+            fn from(value: SymbolFilterError) -> Self {
+                Self::bad_request(value.to_string())
+            }
+        }
+    }
 }
 
 pub mod request {
