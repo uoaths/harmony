@@ -89,7 +89,6 @@ pub mod post_order {
                 // leave_quantity = base_quantity % stepSize;
                 // sell_base_quantity = base_quantity - leave_quantity;
 
-
                 // filter: NOTIONAL
                 // maxNotional >= base_quantity * price >= minNotional
                 let selling_order = client
@@ -120,7 +119,9 @@ pub mod buy {
         use crate::api::http::request::Json;
         use crate::api::http::response::{Response, ResponseResult};
         use crate::api::http::trip::Trip;
+
         use crate::services::binance::client_with_sign;
+        use crate::services::binance::filter::spot_market::quote_quantity;
 
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Payload {
@@ -135,8 +136,21 @@ pub mod buy {
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
             let client = client_with_sign(p.api_key, p.secret_key)?;
+
+            // Filter quote quantity
+            let quote_quantity = {
+                let price = client.price(&p.symbol).await?.price;
+                let norm = client.exchange_info(&p.symbol).await?;
+                let symbol_norm = match norm.symbols.first() {
+                    Some(v) => v,
+                    None => return Err(Response::bad_request("exchange info not found".into())),
+                };
+
+                quote_quantity::filter(&price, &p.quote_quantity, &symbol_norm.filters)?
+            };
+
             let result = client
-                .spot_market_order_with_quote(&p.symbol, OrderSide::Buy, &p.quote_quantity, None)
+                .spot_market_order_with_quote(&p.symbol, OrderSide::Buy, &quote_quantity, None)
                 .await?;
 
             Ok(Response::ok(result))
@@ -154,7 +168,9 @@ pub mod sell {
         use crate::api::http::request::Json;
         use crate::api::http::response::{Response, ResponseResult};
         use crate::api::http::trip::Trip;
+
         use crate::services::binance::client_with_sign;
+        use crate::services::binance::filter::spot_market::base_quantity;
 
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Payload {
@@ -169,8 +185,21 @@ pub mod sell {
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
             let client = client_with_sign(p.api_key, p.secret_key)?;
+
+            // Filter base quantity
+            let base_quantity = {
+                let price = client.price(&p.symbol).await?.price;
+                let norm = client.exchange_info(&p.symbol).await?;
+                let symbol_norm = match norm.symbols.first() {
+                    Some(v) => v,
+                    None => return Err(Response::bad_request("exchange info not found".into())),
+                };
+
+                base_quantity::filter(&price, &p.base_quantity, &symbol_norm.filters)?
+            };
+
             let result = client
-                .spot_market_order_with_base(&p.symbol, OrderSide::Sell, &p.base_quantity, None)
+                .spot_market_order_with_base(&p.symbol, OrderSide::Sell, &base_quantity, None)
                 .await?;
 
             Ok(Response::ok(result))

@@ -1,4 +1,3 @@
-
 pub mod norm {
     pub mod get_norm {
         pub const PATH: &str = "/binance/market/norm";

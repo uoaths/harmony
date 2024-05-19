@@ -8,7 +8,7 @@ default = []
 
 crypto = ["dep:ethers", "dep:bigdecimal", "dep:lazy_static"]
 
-binance = ["dep:binance"]
+binance = ["dep:binance", "dep:rust_decimal"]
 
 full = [
     "crypto", 
@@ -32,4 +32,5 @@ bigdecimal = { version = "0.4", default-features = false, optional = true }
 lazy_static = { version = "1.4", default-features = false, optional = true }
 
 # binance features
+rust_decimal = { version = "1.35", default-features = false, optional = true }
 binance = { git = "https://github.com/uoaths/binance.git", branch = "main", optional = true }

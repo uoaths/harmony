@@ -1,5 +1,5 @@
-mod spot;
 mod market;
+mod spot;
 
 pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
     use axum::{

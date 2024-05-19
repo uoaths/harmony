@@ -24,3 +24,11 @@ impl Range {
         self.min() < value && value < self.max()
     }
 }
+
+use std::str::FromStr;
+
+use rust_decimal::{Decimal, Error};
+
+pub fn to_decimal(value: &String) -> Result<Decimal, Error> {
+    Decimal::from_str(value)
+}
