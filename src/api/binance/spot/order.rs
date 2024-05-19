@@ -232,7 +232,53 @@ pub mod check {
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
             let client = client_with_sign(p.api_key, p.secret_key)?;
-            let result = client.spot_order_info(p.id, &p.symbol, None).await?;
+            let result = client.spot_order_info(&p.symbol, p.id, None).await?;
+
+            Ok(Response::ok(result))
+        }
+    }
+}
+
+pub mod trades {
+    pub mod post_trades {
+        pub const PATH: &str = "/binance/spot/trades";
+
+        use binance::types::{Symbol, Trade};
+        use serde::{Deserialize, Serialize};
+
+        use crate::api::http::request::Json;
+        use crate::api::http::response::{Response, ResponseResult};
+        use crate::api::http::trip::Trip;
+        use crate::services::binance::client_with_sign;
+
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct Payload {
+            api_key: String,
+            secret_key: String,
+            symbol: Symbol,
+            order_id: Option<i64>,
+            start_time: Option<u128>,
+            end_time: Option<u128>,
+            from_id: Option<i64>,
+            limit: Option<u16>,
+        }
+
+        type Reply = Vec<Trade>;
+
+        #[tracing::instrument(skip(_c))]
+        pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
+            let client = client_with_sign(p.api_key, p.secret_key)?;
+            let result = client
+                .spot_trades(
+                    &p.symbol,
+                    p.order_id,
+                    p.start_time,
+                    p.end_time,
+                    p.from_id,
+                    p.limit,
+                    None,
+                )
+                .await?;
 
             Ok(Response::ok(result))
         }
