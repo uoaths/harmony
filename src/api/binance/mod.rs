@@ -33,8 +33,8 @@ pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
             post(spot::order::sell::post_sell::handler),
         )
         .route(
-            spot::order::check::post_check::PATH,
-            post(spot::order::check::post_check::handler),
+            spot::order::info::post_info::PATH,
+            post(spot::order::info::post_info::handler),
         )
         .route(
             spot::order::trades::post_trades::PATH,

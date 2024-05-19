@@ -207,11 +207,11 @@ pub mod sell {
     }
 }
 
-pub mod check {
-    pub mod post_check {
-        pub const PATH: &str = "/binance/spot/order/check";
+pub mod info {
+    pub mod post_info {
+        pub const PATH: &str = "/binance/spot/order/info";
 
-        use binance::types::{OrderInfo, Symbol};
+        use binance::types::{OrderInfo, Symbol, Trade};
         use serde::{Deserialize, Serialize};
 
         use crate::api::http::request::Json;
@@ -223,25 +223,30 @@ pub mod check {
         pub struct Payload {
             api_key: String,
             secret_key: String,
-            id: i64,
+            order_id: i64,
             symbol: Symbol,
         }
 
-        type Reply = OrderInfo;
+        #[derive(Debug, Serialize, Deserialize)]
+        pub struct Reply {
+            order: OrderInfo,
+            trades: Vec<Trade>,
+        }
 
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<Reply> {
             let client = client_with_sign(p.api_key, p.secret_key)?;
-            let result = client.spot_order_info(&p.symbol, p.id, None).await?;
+            let order = client.spot_order_info(&p.symbol, p.order_id, None).await?;
+            let trades = client.spot_trade(&p.symbol, p.order_id, None).await?;
 
-            Ok(Response::ok(result))
+            Ok(Response::ok(Reply { order, trades }))
         }
     }
 }
 
 pub mod trades {
     pub mod post_trades {
-        pub const PATH: &str = "/binance/spot/trades";
+        pub const PATH: &str = "/binance/spot/order/trades";
 
         use binance::types::{Symbol, Trade};
         use serde::{Deserialize, Serialize};
