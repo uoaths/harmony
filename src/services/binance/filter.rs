@@ -37,19 +37,22 @@ pub mod spot_market {
     use super::error::SymbolFilterError;
 
     pub mod base_quantity {
-        use binance::types::SymbolFilter;
+        use binance::types::{SymbolFilter, SymbolInfo};
 
         use super::types::{Decimal, Quantity};
         use super::{math, SymbolFilterError};
 
         pub fn filter(
+            norms: &SymbolInfo,
             price: &Decimal,
             base_quantity: &Decimal,
-            filters: &Vec<SymbolFilter>,
         ) -> Result<Quantity, SymbolFilterError> {
-            let correct_quantity = step_correct_base_quantity(base_quantity, filters)?;
+            // precision
+            let correct_quantity = base_quantity.trunc_with_scale(norms.base_asset_precision.into());
 
-            for filter in filters.iter() {
+            // filter
+            let correct_quantity = step_correct_base_quantity(&correct_quantity, &norms.filters)?;
+            for filter in norms.filters.iter() {
                 match filter {
                     SymbolFilter::LotSize(v) => {
                         let max_base_quantity = math::to_decimal(&v.max_qty)?;
@@ -151,19 +154,21 @@ pub mod spot_market {
     }
 
     pub mod quote_quantity {
-        use binance::types::SymbolFilter;
+        use binance::types::{SymbolFilter, SymbolInfo};
 
         use super::types::{Decimal, Quantity};
         use super::{math, SymbolFilterError};
 
         pub fn filter(
+            norms: &SymbolInfo,
             _price: &Decimal,
             quote_quantity: &Decimal,
-            filters: &Vec<SymbolFilter>,
         ) -> Result<Quantity, SymbolFilterError> {
-            let correct_quote_quantity = quote_quantity.clone();
+            // precision
+            let correct_quote_quantity = quote_quantity.trunc_with_scale(norms.quote_asset_precision.into());
 
-            for filter in filters.iter() {
+            // filter
+            for filter in norms.filters.iter() {
                 match filter {
                     SymbolFilter::MinNotional(v) => {
                         if v.apply_to_market {

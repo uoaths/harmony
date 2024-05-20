@@ -2,7 +2,7 @@ pub mod post_order {
     pub const PATH: &str = "/binance/spot/order";
 
     use binance::prelude::Client;
-    use binance::types::{OrderSide, Symbol, SymbolFilter};
+    use binance::types::{OrderSide, Symbol, SymbolInfo};
     use serde::{Deserialize, Serialize};
 
     use crate::api::http::request::Json;
@@ -58,19 +58,20 @@ pub mod post_order {
         let price = client.price(&p.symbol).await?.price;
         let price = to_decimal(&price).unwrap();
 
-        let filters = match norm.symbols.first() {
-            Some(v) => &v.filters,
+        let norms = match norm.symbols.first() {
+            Some(v) => v,
             None => return Err(Response::bad_request("exchange info not found".into())),
         };
-
-        let mut positions = Vec::with_capacity(p.positions.len());
+        
         let mut order = Vec::with_capacity(p.positions.len());
+        let mut positions = Vec::with_capacity(p.positions.len());
+
         for mut position in p.positions.into_iter() {
-            if let Some(v) = buy(&client, &p.symbol, &price, &filters, &mut position).await {
-                order.push(v)
+            if let Some(v) = sell(&client, &p.symbol, &price, &norms, &mut position).await {
+                order.push(v);
             }
 
-            if let Some(v) = sell(&client, &p.symbol, &price, &filters, &mut position).await {
+            if let Some(v) = buy(&client, &p.symbol, &price, &norms,  &mut position).await {
                 order.push(v)
             }
 
@@ -84,7 +85,7 @@ pub mod post_order {
         client: &Client,
         symbol: &Symbol,
         price: &Price,
-        filters: &Vec<SymbolFilter>,
+        norms: &SymbolInfo,
         position: &mut Position,
     ) -> Option<Order> {
         use crate::services::binance::filter::spot_market::quote_quantity::filter;
@@ -97,7 +98,7 @@ pub mod post_order {
 
         // Filter the number of quotes to be bought.
         // If the filter is not successfully passed, None will be returned.
-        let quote_quantity = filter(price, &position.quote_quantity, filters).ok()?;
+        let quote_quantity = filter(norms, price, &position.quote_quantity).ok()?;
 
         // Buy the base quantity by the quoted quantity
         let order = place(client, symbol, &quote_quantity).await.ok()?;
@@ -151,7 +152,7 @@ pub mod post_order {
         client: &Client,
         symbol: &Symbol,
         price: &Price,
-        filters: &Vec<SymbolFilter>,
+        norms: &SymbolInfo,
         position: &mut Position,
     ) -> Option<Order> {
         use crate::services::binance::filter::spot_market::base_quantity::filter;
@@ -162,7 +163,7 @@ pub mod post_order {
             return None;
         }
 
-        let base_quantity = filter(price, &position.base_quantity, filters).ok()?;
+        let base_quantity = filter(norms, price, &position.base_quantity).ok()?;
         let order = place(client, symbol, &base_quantity).await.ok()?;
 
         // Calculate the commission fee for the buy order and add it to the trade list
