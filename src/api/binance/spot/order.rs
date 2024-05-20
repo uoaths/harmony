@@ -62,7 +62,7 @@ pub mod post_order {
             Some(v) => v,
             None => return Err(Response::bad_request("exchange info not found".into())),
         };
-        
+
         let mut order = Vec::with_capacity(p.positions.len());
         let mut positions = Vec::with_capacity(p.positions.len());
 
@@ -71,7 +71,7 @@ pub mod post_order {
                 order.push(v);
             }
 
-            if let Some(v) = buy(&client, &p.symbol, &price, &norms,  &mut position).await {
+            if let Some(v) = buy(&client, &p.symbol, &price, &norms, &mut position).await {
                 order.push(v)
             }
 

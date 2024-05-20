@@ -48,7 +48,8 @@ pub mod spot_market {
             base_quantity: &Decimal,
         ) -> Result<Quantity, SymbolFilterError> {
             // precision
-            let correct_quantity = base_quantity.trunc_with_scale(norms.base_asset_precision.into());
+            let correct_quantity =
+                base_quantity.trunc_with_scale(norms.base_asset_precision.into());
 
             // filter
             let correct_quantity = step_correct_base_quantity(&correct_quantity, &norms.filters)?;
@@ -165,7 +166,8 @@ pub mod spot_market {
             quote_quantity: &Decimal,
         ) -> Result<Quantity, SymbolFilterError> {
             // precision
-            let correct_quote_quantity = quote_quantity.trunc_with_scale(norms.quote_asset_precision.into());
+            let correct_quote_quantity =
+                quote_quantity.trunc_with_scale(norms.quote_asset_precision.into());
 
             // filter
             for filter in norms.filters.iter() {
