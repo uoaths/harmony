@@ -1,5 +1,6 @@
 pub mod filter;
 pub mod math;
+pub mod spot;
 
 use std::{error::Error, time::Duration};
 
