@@ -113,7 +113,7 @@ pub mod buy {
     pub mod post_buy {
         pub const PATH: &str = "/binance/spot/order/buy";
 
-        use binance::types::{OrderResponseFull, OrderSide, Quantity, Symbol};
+        use binance::types::{OrderResponseFull, OrderSide, Symbol};
         use serde::{Deserialize, Serialize};
 
         use crate::api::http::request::Json;
@@ -121,7 +121,7 @@ pub mod buy {
         use crate::api::http::trip::Trip;
 
         use crate::services::binance::client_with_sign;
-        use crate::services::binance::filter::spot_market::quote_quantity;
+        use crate::services::binance::types::Quantity;
 
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Payload {
@@ -150,7 +150,12 @@ pub mod buy {
             };
 
             let result = client
-                .spot_market_order_with_quote(&p.symbol, OrderSide::Buy, &quote_quantity, None)
+                .spot_market_order_with_quote(
+                    &p.symbol,
+                    OrderSide::Buy,
+                    &p.quote_quantity.to_string(),
+                    None,
+                )
                 .await?;
 
             Ok(Response::ok(result))
@@ -162,7 +167,7 @@ pub mod sell {
     pub mod post_sell {
         pub const PATH: &str = "/binance/spot/order/sell";
 
-        use binance::types::{OrderResponseFull, OrderSide, Quantity, Symbol};
+        use binance::types::{OrderResponseFull, OrderSide, Symbol};
         use serde::{Deserialize, Serialize};
 
         use crate::api::http::request::Json;
@@ -170,7 +175,7 @@ pub mod sell {
         use crate::api::http::trip::Trip;
 
         use crate::services::binance::client_with_sign;
-        use crate::services::binance::filter::spot_market::base_quantity;
+        use crate::services::binance::types::Quantity;
 
         #[derive(Debug, Serialize, Deserialize)]
         pub struct Payload {
@@ -199,7 +204,12 @@ pub mod sell {
             };
 
             let result = client
-                .spot_market_order_with_base(&p.symbol, OrderSide::Sell, &base_quantity, None)
+                .spot_market_order_with_base(
+                    &p.symbol,
+                    OrderSide::Sell,
+                    &p.base_quantity.to_string(),
+                    None,
+                )
                 .await?;
 
             Ok(Response::ok(result))
