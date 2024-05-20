@@ -32,24 +32,28 @@ pub mod error {
 
 pub mod spot_market {
     use crate::services::binance::math;
+    use crate::services::binance::types;
 
     use super::error::SymbolFilterError;
 
     pub mod base_quantity {
-        use binance::types::{Decimal, Quantity, SymbolFilter};
+        use binance::types::{SymbolFilter, SymbolInfo};
 
+        use super::types::{Decimal, Quantity};
         use super::{math, SymbolFilterError};
 
         pub fn filter(
+            norms: &SymbolInfo,
             price: &Decimal,
             base_quantity: &Decimal,
-            filters: &Vec<SymbolFilter>,
         ) -> Result<Quantity, SymbolFilterError> {
-            let price = math::to_decimal(price)?;
+            // precision
             let correct_quantity =
-                math::to_decimal(&step_correct_base_quantity(base_quantity, filters)?)?;
+                base_quantity.trunc_with_scale(norms.base_asset_precision.into());
 
-            for filter in filters.iter() {
+            // filter
+            let correct_quantity = step_correct_base_quantity(&correct_quantity, &norms.filters)?;
+            for filter in norms.filters.iter() {
                 match filter {
                     SymbolFilter::LotSize(v) => {
                         let max_base_quantity = math::to_decimal(&v.max_qty)?;
@@ -116,14 +120,14 @@ pub mod spot_market {
                 }
             }
 
-            Ok(correct_quantity.to_string())
+            Ok(correct_quantity)
         }
 
         fn step_correct_base_quantity(
             base_quantity: &Quantity,
             filters: &Vec<SymbolFilter>,
         ) -> Result<Quantity, SymbolFilterError> {
-            let mut correct_base_quantity = math::to_decimal(base_quantity)?;
+            let mut correct_base_quantity = base_quantity.clone();
 
             for filter in filters.iter() {
                 if let SymbolFilter::LotSize(v) = filter {
@@ -146,23 +150,27 @@ pub mod spot_market {
                 }
             }
 
-            Ok(correct_base_quantity.to_string())
+            Ok(correct_base_quantity)
         }
     }
 
     pub mod quote_quantity {
-        use binance::types::{Decimal, Quantity, SymbolFilter};
+        use binance::types::{SymbolFilter, SymbolInfo};
 
+        use super::types::{Decimal, Quantity};
         use super::{math, SymbolFilterError};
 
         pub fn filter(
+            norms: &SymbolInfo,
             _price: &Decimal,
             quote_quantity: &Decimal,
-            filters: &Vec<SymbolFilter>,
         ) -> Result<Quantity, SymbolFilterError> {
-            let correct_quote_quantity = math::to_decimal(quote_quantity)?;
+            // precision
+            let correct_quote_quantity =
+                quote_quantity.trunc_with_scale(norms.quote_asset_precision.into());
 
-            for filter in filters.iter() {
+            // filter
+            for filter in norms.filters.iter() {
                 match filter {
                     SymbolFilter::MinNotional(v) => {
                         if v.apply_to_market {
@@ -202,7 +210,7 @@ pub mod spot_market {
                 }
             }
 
-            Ok(correct_quote_quantity.to_string())
+            Ok(correct_quote_quantity)
         }
     }
 }
