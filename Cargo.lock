@@ -2634,6 +2634,7 @@ checksum = "1790d1c4c0ca81211399e0e0af16333276f375209e71a37b67698a373db5b47a"
 dependencies = [
  "arrayvec",
  "num-traits",
+ "serde",
 ]
 
 [[package]]

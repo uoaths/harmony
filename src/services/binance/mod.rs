@@ -5,6 +5,13 @@ use std::{error::Error, time::Duration};
 
 use binance::prelude::*;
 
+pub mod types {
+    pub use rust_decimal::Decimal;
+
+    pub type Quantity = Decimal;
+    pub type Price = Decimal;
+}
+
 pub fn client() -> Result<Client, Box<dyn Error>> {
     let result = ClientBuilder::new().build()?;
 
