@@ -1,5 +1,5 @@
 pub mod error;
-pub mod spot_market;
+pub mod market;
 
 type SymbolFilterResult<T> = Result<T, error::SymbolFilterError>;
 
