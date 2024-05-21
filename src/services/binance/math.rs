@@ -50,3 +50,5 @@ use super::types::Price;
 pub fn to_decimal(value: &String) -> Result<Decimal, Error> {
     Decimal::from_str(value)
 }
+
+pub const ZERO: Decimal = Decimal::ZERO;

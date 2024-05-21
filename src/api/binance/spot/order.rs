@@ -88,9 +88,9 @@ pub mod post_order {
         norms: &SymbolInfo,
         position: &mut Position,
     ) -> Option<Order> {
-        use crate::services::binance::filter::spot_market::quote_quantity::filter;
+        use crate::services::binance::filter::spot_market::quote_quantity::{correct, filter};
         use crate::services::binance::math::is_within_price_ranges;
-        use crate::services::binance::spot::place_buying_market_order_with_quote as place;
+        use crate::services::binance::order::place_buying_market_order_with_quote as place;
 
         if !is_within_price_ranges(price, &position.buying_price) {
             return None;
@@ -98,7 +98,8 @@ pub mod post_order {
 
         // Filter the number of quotes to be bought.
         // If the filter is not successfully passed, None will be returned.
-        let quote_quantity = filter(norms, price, &position.quote_quantity).ok()?;
+        let quote_quantity = correct(norms, price, &position.quote_quantity).ok()?;
+        filter(norms, price, &quote_quantity).ok()?;
 
         // Buy the base quantity by the quoted quantity
         let order = place(client, symbol, &quote_quantity).await.ok()?;
@@ -155,15 +156,17 @@ pub mod post_order {
         norms: &SymbolInfo,
         position: &mut Position,
     ) -> Option<Order> {
-        use crate::services::binance::filter::spot_market::base_quantity::filter;
+        use crate::services::binance::filter::spot_market::base_quantity::{correct, filter};
         use crate::services::binance::math::is_within_price_ranges;
-        use crate::services::binance::spot::place_selling_market_order_with_base as place;
+        use crate::services::binance::order::place_selling_market_order_with_base as place;
 
         if !is_within_price_ranges(price, &position.selling_price) {
             return None;
         }
 
-        let base_quantity = filter(norms, price, &position.base_quantity).ok()?;
+        let base_quantity = correct(norms, price, &position.base_quantity).ok()?;
+        filter(norms, price, &base_quantity).ok()?;
+
         let order = place(client, symbol, &base_quantity).await.ok()?;
 
         // Calculate the commission fee for the buy order and add it to the trade list
