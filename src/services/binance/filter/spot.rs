@@ -285,7 +285,7 @@ mod tests {
     mod tests_base_quantity {
         use binance::types::SymbolFilter;
 
-        use crate::services::binance::filter::market::base_quantity::*;
+        use crate::services::binance::filter::spot::base_quantity::*;
 
         use super::{decimal, symbol_norms, symbol_price};
 

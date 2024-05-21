@@ -88,7 +88,7 @@ pub mod post_order {
         norms: &SymbolInfo,
         position: &mut Position,
     ) -> Option<Order> {
-        use crate::services::binance::filter::market::quote_quantity::{correct, filter};
+        use crate::services::binance::filter::spot::quote_quantity::{correct, filter};
         use crate::services::binance::math::is_within_price_ranges;
         use crate::services::binance::order::place_buying_market_order_with_quote as place;
 
@@ -156,7 +156,7 @@ pub mod post_order {
         norms: &SymbolInfo,
         position: &mut Position,
     ) -> Option<Order> {
-        use crate::services::binance::filter::market::base_quantity::{correct, filter};
+        use crate::services::binance::filter::spot::base_quantity::{correct, filter};
         use crate::services::binance::math::is_within_price_ranges;
         use crate::services::binance::order::place_selling_market_order_with_base as place;
 
