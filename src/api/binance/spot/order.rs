@@ -23,6 +23,8 @@ pub mod post_order {
 
     #[derive(Debug, Serialize, Deserialize)]
     pub struct Reply {
+        symbol: Symbol,
+        price: Price,
         positions: Vec<Position>,
         order: Vec<Order>,
     }
@@ -78,7 +80,7 @@ pub mod post_order {
             positions.push(position)
         }
 
-        Ok(Response::ok(Reply { positions, order }))
+        Ok(Response::ok(Reply { positions, order, price, symbol: p.symbol }))
     }
 
     async fn buy(
