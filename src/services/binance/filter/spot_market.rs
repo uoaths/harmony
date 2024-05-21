@@ -208,12 +208,9 @@ pub mod quote_quantity {
     ) -> SymbolFilterResult<Quantity> {
         use crate::services::binance::filter::current::correct_precision;
 
-        let mut correct_quantity = quantity.clone();
-
         let precision = norms.quote_asset_precision as u32;
-        correct_quantity = correct_precision(quantity, precision);
 
-        Ok(correct_quantity)
+        Ok(correct_precision(quantity, precision))
     }
 
     pub fn filter_min_notional<'a>(
