@@ -6,31 +6,42 @@ edition = "2021"
 [features]
 default = []
 
-crypto = ["dep:ethers", "dep:bigdecimal", "dep:lazy_static"]
+# Services
+services = [
+    "service-binance",
+    "service-crypto"
+]
 
-binance = ["dep:binance", "dep:rust_decimal"]
+service-binance = [
+    "dep:binance",
+    "dep:rust_decimal"
+]
+service-crypto = [
+    "dep:ethers",
+    "dep:bigdecimal",
+    "dep:lazy_static"
+]
 
 full = [
-    "crypto", 
-    "binance"
+    "services"
 ]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"], default-features = false }
-serde_json = { version = "1.0", default-features = false }
+serde_json = { version = "1.0", features = ["std"], default-features = false }
 
+tokio = { version = "1.37", features = ["rt-multi-thread", "net"], default-features = false }
 axum = { version = "0.7", features = ["tokio", "http1", "json", "query"], default-features = false }
 axum-server = { version = "0.6", features = ["tls-rustls"], default-features = false }
-tokio = { version = "1.37", features = ["rt-multi-thread", "net"], default-features = false }
 
 tracing = { version = "0.1", features = ["attributes"], default-features = false }
 tracing-subscriber = { version = "0.3", features = ["fmt"], default-features = false }
 
-# crypto features
+# service crypto features
 ethers = { version = "2.0", features = ["ws", "rustls"], default-features = false, optional = true }
 bigdecimal = { version = "0.4", default-features = false, optional = true }
 lazy_static = { version = "1.4", default-features = false, optional = true }
 
-# binance features
+# service binance features
 rust_decimal = { version = "1.35", features = ["serde-with-str"], default-features = false, optional = true }
-binance = { git = "https://github.com/uoaths/binance.git", branch = "main", optional = true }
+binance = { git = "https://github.com/uoaths/binance.git", branch = "main", default-features = false, optional = true }

@@ -20,10 +20,10 @@ async fn main() {
         let router = Router::new();
         let router = router.merge(api::general::router(state.clone()));
 
-        #[cfg(feature = "crypto")]
+        #[cfg(feature = "service-crypto")]
         let router = router.merge(api::crypto::router(state.clone()));
 
-        #[cfg(feature = "binance")]
+        #[cfg(feature = "service-binance")]
         let router = router.merge(api::binance::router(state.clone()));
 
         router
