@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[rustfmt::skip]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum BlockChain {
     Ethereum = 1,
     Polygon  = 137,

@@ -1,52 +1,39 @@
+mod health;
+
+mod get {
+    pub const PATH: &str = "/";
+
+    pub mod handler {
+        use crate::api::http::response::{Response, ResponseResult};
+        use crate::api::http::trip::Trip;
+
+        use super::models::ResponseBody;
+
+        #[tracing::instrument(skip(c))]
+        pub async fn handler(c: Trip) -> ResponseResult<ResponseBody> {
+            let response = Response::ok(ResponseBody {
+                timestamp: c.timestamp_millis(),
+            });
+
+            Ok(response)
+        }
+    }
+
+    pub mod models {
+        use serde::{Deserialize, Serialize};
+
+        #[derive(Debug, Clone, Serialize, Deserialize)]
+        pub struct ResponseBody {
+            pub timestamp: u128,
+        }
+    }
+}
+
 pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
     use axum::{routing::get, Router};
 
     Router::new()
-        .route(get_root::PATH, get(get_root::handler))
-        .route(get_health::PATH, get(get_health::handler))
+        .route(get::PATH, get(get::handler::handler))
+        .route(health::get::PATH, get(health::get::handler::handler))
         .with_state(state)
-}
-
-mod get_health {
-    pub const PATH: &str = "/health";
-
-    use serde::Serialize;
-
-    use crate::api::http::response::Response;
-    use crate::api::http::trip::Trip;
-
-    #[derive(Serialize)]
-    pub struct Reply {
-        timestamp: u128,
-    }
-
-    #[tracing::instrument(skip(c))]
-    pub async fn handler(c: Trip) -> Response<Reply> {
-        Response::ok(Reply {
-            timestamp: c.timestamp_millis(),
-        })
-    }
-}
-
-mod get_root {
-    pub const PATH: &str = "/";
-
-    use serde::Serialize;
-
-    use crate::api::http::response::{Response, ResponseResult};
-    use crate::api::http::trip::Trip;
-
-    #[derive(Serialize)]
-    pub struct Reply {
-        timestamp: u128,
-    }
-
-    #[tracing::instrument(skip(c))]
-    pub async fn handler(c: Trip) -> ResponseResult<Reply> {
-        let response = Response::ok(Reply {
-            timestamp: c.timestamp_millis(),
-        });
-
-        Ok(response)
-    }
 }
