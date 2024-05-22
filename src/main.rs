@@ -1,12 +1,12 @@
-use std::{env, net::SocketAddr, sync::Arc};
-
-use axum::Router;
-use axum_server::tls_rustls::RustlsConfig;
-use harmony::api;
-use tracing_subscriber;
-
+#[cfg(feature = "server")]
 #[tokio::main]
 async fn main() {
+    use axum::Router;
+    use axum_server::tls_rustls::RustlsConfig;
+    use harmony::api;
+    use std::{env, net::SocketAddr, sync::Arc};
+    use tracing_subscriber;
+
     tracing_subscriber::fmt::init();
 
     let address = env::var("ADDRESS").unwrap_or("[::]:2053".into());
@@ -20,10 +20,10 @@ async fn main() {
         let router = Router::new();
         let router = router.merge(api::general::router(state.clone()));
 
-        #[cfg(feature = "crypto")]
+        #[cfg(feature = "service-crypto")]
         let router = router.merge(api::crypto::router(state.clone()));
 
-        #[cfg(feature = "binance")]
+        #[cfg(feature = "service-binance")]
         let router = router.merge(api::binance::router(state.clone()));
 
         router

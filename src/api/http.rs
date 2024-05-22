@@ -110,7 +110,7 @@ pub mod response {
         }
     }
 
-    #[cfg(feature = "crypto")]
+    #[cfg(feature = "service-crypto")]
     mod from_contract_error {
         use crate::services::crypto::contract::ContractError;
 
@@ -126,7 +126,7 @@ pub mod response {
         }
     }
 
-    #[cfg(feature = "binance")]
+    #[cfg(feature = "service-binance")]
     mod from_binance_client_error {
         use binance::error::ClientError;
 
@@ -142,7 +142,7 @@ pub mod response {
         }
     }
 
-    #[cfg(feature = "binance")]
+    #[cfg(feature = "service-binance")]
     mod from_binance_filter_error {
         use crate::services::binance::filter::error::SymbolFilterError;
 

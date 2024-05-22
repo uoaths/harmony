@@ -4,32 +4,58 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = []
+default = [ "server" ]
 
-crypto = ["dep:ethers", "dep:bigdecimal", "dep:lazy_static"]
+# Server
+server = [
+    "server-api-handler",
+    "server-api-models",
 
-binance = ["dep:binance", "dep:rust_decimal"]
+    "dep:tokio",
+    "dep:axum-server",
+    "dep:tracing-subscriber"
+]
+
+server-api-models = []
+
+server-api-handler = [
+    "dep:axum",
+    "dep:tracing",
+]
+
+# Services
+services = [
+    "service-binance",
+    "service-crypto"
+]
+
+service-binance = ["dep:binance", "dep:rust_decimal"]
+service-crypto = ["dep:ethers", "dep:bigdecimal", "dep:lazy_static"]
 
 full = [
-    "crypto", 
-    "binance"
+    "server",
+    "services", 
 ]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"], default-features = false }
-serde_json = { version = "1.0", default-features = false }
+serde_json = { version = "1.0", features = ["std"], default-features = false }
 
-axum = { version = "0.7", features = ["tokio", "http1", "json", "query"], default-features = false }
-axum-server = { version = "0.6", features = ["tls-rustls"], default-features = false }
-tokio = { version = "1.37", features = ["rt-multi-thread", "net"], default-features = false }
+# server features
+tokio = { version = "1.37", features = ["rt-multi-thread", "net"], default-features = false, optional = true  }
+axum-server = { version = "0.6", features = ["tls-rustls"], default-features = false, optional = true  }
+tracing-subscriber = { version = "0.3", features = ["fmt"], default-features = false, optional = true  }
 
-tracing = { version = "0.1", features = ["attributes"], default-features = false }
-tracing-subscriber = { version = "0.3", features = ["fmt"], default-features = false }
+# server api-handler features
+axum = { version = "0.7", features = ["tokio", "http1", "json", "query"], default-features = false, optional = true }
+tracing = { version = "0.1", features = ["attributes"], default-features = false, optional = true  }
+
 
 # crypto features
 ethers = { version = "2.0", features = ["ws", "rustls"], default-features = false, optional = true }
 bigdecimal = { version = "0.4", default-features = false, optional = true }
 lazy_static = { version = "1.4", default-features = false, optional = true }
+
 
 # binance features
 rust_decimal = { version = "1.35", features = ["serde-with-str"], default-features = false, optional = true }

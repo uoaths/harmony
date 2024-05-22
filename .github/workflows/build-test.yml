@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        features: ["default", "crypto", "binance", "full"]
+        features: ["default", "service-binance", "service-crypto", "full"]
   
     steps:
     - uses: actions/checkout@main
