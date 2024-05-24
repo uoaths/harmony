@@ -20,8 +20,8 @@ pub struct Position {
 pub struct Trade {
     pub side: TradeSide,
     pub price: Price,
-    pub base_quantity: Quantity,
-    pub quote_quantity_commission: Quantity,
+    pub base_quantity: BaseQuantity,
+    pub quote_quantity_commission: QuoteQuantity,
     pub timestamp: u128,
 }
 
@@ -42,7 +42,7 @@ impl Trade {
         }
     }
 
-    pub fn with_buy(
+    pub fn with_buy_side(
         price: Price,
         base_quantity: Quantity,
         quote_quantity_commission: Quantity,
@@ -56,7 +56,7 @@ impl Trade {
         )
     }
 
-    pub fn with_sell(
+    pub fn with_sell_side(
         price: Price,
         base_quantity: Quantity,
         quote_quantity_commission: Quantity,
@@ -68,6 +68,44 @@ impl Trade {
             quote_quantity_commission,
             time::timestamp().as_millis(),
         )
+    }
+
+    pub fn with_sell<T>(price: &Price, quantity: &BaseQuantity, sell: &T) -> Option<Self>
+    where
+        T: Fn(&Price, &BaseQuantity) -> Option<QuoteQuantity>,
+    {
+        if price < &Price::ZERO || quantity < &BaseQuantity::ZERO {
+            return None;
+        };
+
+        let exp_quote_quantity = price * quantity;
+        let act_quote_quantity = sell(price, quantity)?;
+        let quote_quantity_commission = exp_quote_quantity - act_quote_quantity;
+
+        Some(Self::with_sell_side(
+            price.clone(),
+            quantity.clone(),
+            quote_quantity_commission,
+        ))
+    }
+
+    pub fn with_buy<T>(price: &Price, quantity: &QuoteQuantity, buy: &T) -> Option<Self>
+    where
+        T: Fn(&Price, &QuoteQuantity) -> Option<BaseQuantity>,
+    {
+        if price < &Price::ZERO || quantity < &QuoteQuantity::ZERO {
+            return None;
+        };
+
+        let exp_base_quantity = quantity / price;
+        let act_base_quantity = buy(price, quantity)?;
+        let quote_quantity_commission = (exp_base_quantity - act_base_quantity) * price;
+
+        Some(Self::with_buy_side(
+            price.clone(),
+            act_base_quantity,
+            quote_quantity_commission,
+        ))
     }
 }
 
@@ -96,60 +134,27 @@ impl Position {
         let buying_price = self.max_buying_price();
         let selling_price = self.min_selling_price();
 
-        if buying_price <= &Price::ZERO
-            || selling_price <= &Price::ZERO
-            || &self.base_quantity < &Price::ZERO
-            || &self.quote_quantity < &Price::ZERO
-        {
-            return None;
-        };
-
         let quote_quantity = if self.is_short() {
             self.quote_quantity
         } else {
-            let exp_selling_quote_quantity = selling_price * self.base_quantity;
-            let act_selling_quote_quantity = sell(selling_price, &self.base_quantity)?;
+            let trade = Trade::with_sell(selling_price, &self.base_quantity, sell)?;
+            let quantity = trade.base_quantity * selling_price + self.quote_quantity;
+            result.push(trade);
 
-            let quote_quantity_commission = exp_selling_quote_quantity - act_selling_quote_quantity;
-
-            result.push(Trade::with_sell(
-                selling_price.clone(),
-                self.base_quantity,
-                quote_quantity_commission,
-            ));
-
-            act_selling_quote_quantity + self.quote_quantity
+            quantity
         };
 
         let base_quantity = {
-            let exp_buying_base_quantity = quote_quantity / buying_price;
-            let act_buying_base_quantity = buy(buying_price, &quote_quantity)?;
+            let trade = Trade::with_buy(buying_price, &quote_quantity, buy)?;
+            let quantity = trade.base_quantity.clone();
+            result.push(trade);
 
-            let quote_quantity_commission =
-                (exp_buying_base_quantity - act_buying_base_quantity) * buying_price;
-
-            result.push(Trade::with_buy(
-                buying_price.clone(),
-                act_buying_base_quantity,
-                quote_quantity_commission,
-            ));
-
-            act_buying_base_quantity
+            quantity
         };
 
         let _quote_quantity = {
-            let exp_selling_quote_quantity = selling_price * base_quantity;
-            let act_selling_quote_quantity = sell(selling_price, &base_quantity)?;
-
-            let quote_quantity_commission = exp_selling_quote_quantity - act_selling_quote_quantity;
-
-            result.push(Trade::with_sell(
-                selling_price.clone(),
-                base_quantity,
-                quote_quantity_commission,
-            ));
-
-            act_selling_quote_quantity
+            let trade = Trade::with_sell(selling_price, &base_quantity, sell)?;
+            result.push(trade);
         };
 
         return Some(result);
@@ -232,8 +237,8 @@ mod tests {
         assert_eq!(
             trades,
             vec![
-                Trade::with_buy(dec("50"), dec("0.4"), dec("0")),
-                Trade::with_sell(dec("200"), dec("0.4"), dec("0"))
+                Trade::with_buy_side(dec("50"), dec("0.4"), dec("0")),
+                Trade::with_sell_side(dec("200"), dec("0.4"), dec("0"))
             ]
         );
 
@@ -243,8 +248,8 @@ mod tests {
         assert_eq!(
             trades,
             vec![
-                Trade::with_buy(dec("50"), dec("0.3996"), dec("0.02")),
-                Trade::with_sell(dec("200"), dec("0.3996"), dec("0.0799200"))
+                Trade::with_buy_side(dec("50"), dec("0.3996"), dec("0.02")),
+                Trade::with_sell_side(dec("200"), dec("0.3996"), dec("0.0799200"))
             ]
         );
     }
@@ -264,9 +269,9 @@ mod tests {
         assert_eq!(
             trades,
             vec![
-                Trade::with_sell(dec("210"), dec("5"), dec("0")),
-                Trade::with_buy(dec("80"), dec("13.375"), dec("0")),
-                Trade::with_sell(dec("210"), dec("13.375"), dec("0"))
+                Trade::with_sell_side(dec("210"), dec("5"), dec("0")),
+                Trade::with_buy_side(dec("80"), dec("13.375"), dec("0")),
+                Trade::with_sell_side(dec("210"), dec("13.375"), dec("0"))
             ]
         );
     }
@@ -286,9 +291,9 @@ mod tests {
         assert_eq!(
             trades,
             vec![
-                Trade::with_sell(dec("200"), dec("5"), dec("0")),
-                Trade::with_buy(dec("100"), dec("10.2"), dec("0")),
-                Trade::with_sell(dec("200"), dec("10.2"), dec("0"))
+                Trade::with_sell_side(dec("200"), dec("5"), dec("0")),
+                Trade::with_buy_side(dec("100"), dec("10.2"), dec("0")),
+                Trade::with_sell_side(dec("200"), dec("10.2"), dec("0"))
             ]
         );
     }
