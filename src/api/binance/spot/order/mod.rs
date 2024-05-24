@@ -62,10 +62,10 @@ pub mod post {
             position: &mut Position,
         ) -> Option<Order> {
             use crate::services::binance::filter::spot::quote_quantity::{correct, filter};
-            use crate::services::binance::math::is_within_price_ranges;
+            use crate::services::binance::math::is_within_ranges;
             use crate::services::binance::order::place_buying_market_order_with_quote as place;
 
-            if !is_within_price_ranges(price, &position.buying_price) {
+            if !is_within_ranges(price, &position.buying_price) {
                 return None;
             }
 
@@ -130,10 +130,10 @@ pub mod post {
             position: &mut Position,
         ) -> Option<Order> {
             use crate::services::binance::filter::spot::base_quantity::{correct, filter};
-            use crate::services::binance::math::is_within_price_ranges;
+            use crate::services::binance::math::is_within_ranges;
             use crate::services::binance::order::place_selling_market_order_with_base as place;
 
-            if !is_within_price_ranges(price, &position.selling_price) {
+            if !is_within_ranges(price, &position.selling_price) {
                 return None;
             }
 
@@ -232,8 +232,8 @@ pub mod post {
 
         #[derive(Debug, Clone, Serialize, Deserialize)]
         pub struct Position {
-            pub buying_price: Vec<Range>,
-            pub selling_price: Vec<Range>,
+            pub buying_price: Vec<Range<Price>>,
+            pub selling_price: Vec<Range<Price>>,
             pub base_quantity: Quantity,
             pub quote_quantity: Quantity,
         }

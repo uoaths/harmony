@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Range(Decimal, Decimal);
+pub struct Range<T>(T, T);
 
-impl Range {
+impl Range<Decimal> {
     fn min(&self) -> &Decimal {
         if self.0 < self.1 {
             return &self.0;
@@ -25,13 +25,13 @@ impl Range {
     }
 }
 
-pub fn is_within_price_ranges(price: &Price, ranges: &Vec<Range>) -> bool {
+pub fn is_within_ranges(value: &Decimal, ranges: &Vec<Range<Decimal>>) -> bool {
     if ranges.is_empty() {
         return false;
     }
 
     for range in ranges.iter() {
-        if range.is_within(price) {
+        if range.is_within(value) {
             return true;
         }
 
@@ -44,8 +44,6 @@ pub fn is_within_price_ranges(price: &Price, ranges: &Vec<Range>) -> bool {
 use std::str::FromStr;
 
 use rust_decimal::{Decimal, Error};
-
-use super::types::Price;
 
 pub fn to_decimal(value: &String) -> Result<Decimal, Error> {
     Decimal::from_str(value)
