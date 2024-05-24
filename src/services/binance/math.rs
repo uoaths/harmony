@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Range<T>(T, T);
+pub struct Range<T>(pub T, pub T);
 
 impl Range<Decimal> {
-    fn min(&self) -> &Decimal {
+    pub fn min(&self) -> &Decimal {
         if self.0 < self.1 {
             return &self.0;
         }
@@ -12,7 +12,7 @@ impl Range<Decimal> {
         &self.1
     }
 
-    fn max(&self) -> &Decimal {
+    pub fn max(&self) -> &Decimal {
         if self.0 < self.1 {
             return &self.1;
         }
@@ -20,7 +20,7 @@ impl Range<Decimal> {
         &self.0
     }
 
-    fn is_within(&self, value: &Decimal) -> bool {
+    pub fn is_within(&self, value: &Decimal) -> bool {
         self.min() < value && value < self.max()
     }
 }

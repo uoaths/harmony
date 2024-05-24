@@ -1,5 +1,6 @@
 pub mod filter;
 pub mod math;
+pub mod ploy;
 
 use std::{error::Error, time::Duration};
 
@@ -8,8 +9,12 @@ use binance::prelude::*;
 pub mod types {
     pub use rust_decimal::Decimal;
 
+    pub type Symbol = String;
     pub type Quantity = Decimal;
     pub type Price = Decimal;
+
+    pub type BaseQuantity = Quantity;
+    pub type QuoteQuantity = Quantity;
 }
 
 pub fn client() -> Result<Client, Box<dyn Error>> {
