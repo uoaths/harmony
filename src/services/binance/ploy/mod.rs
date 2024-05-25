@@ -1,4 +1,4 @@
-mod limit;
+mod grid;
 
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +8,7 @@ use crate::time;
 
 use super::types::{BaseQuantity, QuoteQuantity};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Position {
     pub buying_prices: Vec<Range<Price>>,
     pub selling_prices: Vec<Range<Price>>,
@@ -137,9 +137,7 @@ pub enum TradeSide {
 }
 
 pub trait Ploy {
-    type Params;
-
-    fn trap<FQ>(params: Self::Params) -> Vec<Position>;
+    fn trap(&self) -> Vec<Position>;
 }
 
 impl Position {

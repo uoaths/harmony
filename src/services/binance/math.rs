@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Range<T>(pub T, pub T);
 
 impl Range<Decimal> {
@@ -41,11 +41,11 @@ pub fn is_within_ranges(value: &Decimal, ranges: &Vec<Range<Decimal>>) -> bool {
     false
 }
 
-use std::str::FromStr;
 
 use rust_decimal::{Decimal, Error};
 
 pub fn to_decimal(value: &String) -> Result<Decimal, Error> {
+    use std::str::FromStr;
     Decimal::from_str(value)
 }
 
