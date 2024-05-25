@@ -85,8 +85,9 @@ pub mod post {
                     // fills fixedly returns the base quantity in the qty field
                     let price = dec(&fill.price);
                     let base_quantity = dec(&fill.qty);
+                    let base_quantity_commission = dec(&fill.commission);
                     let quote_quantity = price * base_quantity;
-                    position.base_quantity += base_quantity;
+                    position.base_quantity += (base_quantity - base_quantity_commission);
                     position.quote_quantity -= quote_quantity;
 
                     trades.push(Trade::with_buy_side(price, base_quantity, quote_quantity))
