@@ -1,7 +1,7 @@
 pub mod filter;
 
-use std::{error::Error, time::Duration};
 use binance::prelude::{Client, ClientBuilder};
+use std::{error::Error, time::Duration};
 
 pub fn client() -> Result<Client, Box<dyn Error>> {
     let result = ClientBuilder::new().build()?;

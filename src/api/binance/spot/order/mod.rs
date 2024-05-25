@@ -192,7 +192,10 @@ pub mod post {
 
     pub mod models {
         use binance::types::{OrderSide, Symbol};
-        use ploy::{math::Range, types::{Price, Quantity}};
+        use ploy::{
+            math::Range,
+            types::{Price, Quantity},
+        };
         use serde::{Deserialize, Serialize};
 
         #[derive(Debug, Clone, Serialize, Deserialize)]
