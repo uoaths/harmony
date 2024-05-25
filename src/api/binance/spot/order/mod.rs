@@ -10,6 +10,7 @@ pub mod post {
         use binance::prelude::Client;
         use binance::types::{Symbol, SymbolInfo};
         use ploy::math::is_within_ranges;
+        use ploy::position::{Position, Trade};
         use ploy::types::{Decimal, Price};
 
         use crate::api::http::request::Json;
@@ -17,14 +18,14 @@ pub mod post {
         use crate::api::http::trip::Trip;
         use crate::services::binance::client_with_sign;
 
-        use super::models::{Order, Payload, Position, ResponseBody, Trade};
+        use super::models::{Order, Payload, ResponseBody};
 
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<ResponseBody> {
             let client = client_with_sign(p.api_key, p.secret_key)?;
             let norm = client.exchange_info(&p.symbol).await?;
             let price = client.price(&p.symbol).await?.price;
-            let price = to_decimal(&price).unwrap();
+            let price = dec(&price);
 
             let norms = match norm.symbols.first() {
                 Some(v) => v,
@@ -64,7 +65,7 @@ pub mod post {
             use crate::services::binance::filter::spot::quote_quantity::{correct, filter};
             use crate::services::binance::order::place_buying_market_order_with_quote as place;
 
-            if !is_within_ranges(price, &position.buying_price) {
+            if !is_within_ranges(price, &position.buying_prices) {
                 return None;
             }
 
@@ -77,47 +78,28 @@ pub mod post {
             let order = place(client, symbol, &quote_quantity).await.ok()?;
 
             // Calculate the commission fee for the buy order and add it to the trade list
-            let (trades, income_base_quantity) = {
+            let trades = {
                 let mut trades = Vec::with_capacity(3);
-                let mut trades_all_base_quantity = Decimal::ZERO;
-                let mut trades_all_commission_base_quantity = Decimal::ZERO;
 
                 for fill in order.fills.iter() {
                     // fills fixedly returns the base quantity in the qty field
-                    let price = to_decimal(&fill.price).unwrap_or_default();
-                    let base_quantity = to_decimal(&fill.qty).unwrap_or_default();
+                    let price = dec(&fill.price);
+                    let base_quantity = dec(&fill.qty);
+                    let base_quantity_commission = dec(&fill.commission);
+                    let quote_quantity = price * (base_quantity - base_quantity_commission);
+                    position.base_quantity += base_quantity;
+                    position.quote_quantity -= quote_quantity;
 
-                    // In the buying direction, the quote commission of price * quantity needs to be calculated
-                    let commission = to_decimal(&fill.commission).unwrap_or_default();
-                    let quote_quantity_commission = price * commission;
-
-                    trades_all_base_quantity += base_quantity;
-                    trades_all_commission_base_quantity += commission;
-
-                    let trade = Trade {
-                        price,
-                        base_quantity,
-                        quote_quantity_commission,
-                    };
-
-                    trades.push(trade)
+                    trades.push(Trade::with_buy_side(price, base_quantity, quote_quantity))
                 }
 
-                let income_base_quantity =
-                    trades_all_base_quantity - trades_all_commission_base_quantity;
-
-                (trades, income_base_quantity)
+                trades
             };
-
-            position.quote_quantity = position.quote_quantity - quote_quantity;
-            position.base_quantity = position.base_quantity + income_base_quantity;
 
             return Some(Order {
                 order_id: order.order_id,
                 symbol: order.symbol,
                 trades,
-                side: order.side,
-                timestamp: order.transact_time,
             });
         }
 
@@ -131,7 +113,7 @@ pub mod post {
             use crate::services::binance::filter::spot::base_quantity::{correct, filter};
             use crate::services::binance::order::place_selling_market_order_with_base as place;
 
-            if !is_within_ranges(price, &position.selling_price) {
+            if !is_within_ranges(price, &position.selling_prices) {
                 return None;
             }
 
@@ -141,60 +123,42 @@ pub mod post {
             let order = place(client, symbol, &base_quantity).await.ok()?;
 
             // Calculate the commission fee for the buy order and add it to the trade list
-            let (trades, income_quote_quantity) = {
+            let trades = {
                 let mut trades = Vec::with_capacity(3);
-                let mut trades_all_quote_quantity = Decimal::ZERO;
-                let mut trades_all_commission_quote_quantity = Decimal::ZERO;
 
                 for fill in order.fills.iter() {
-                    let price = to_decimal(&fill.price).unwrap_or_default();
-                    let base_quantity = to_decimal(&fill.qty).unwrap_or_default();
+                    let price = dec(&fill.price);
+                    let base_quantity = dec(&fill.qty);
+                    let quote_quantity_commission = dec(&fill.commission);
+                    let quote_quantity = (price * base_quantity) - quote_quantity_commission;
+                    position.base_quantity -= base_quantity;
+                    position.quote_quantity += quote_quantity;
 
-                    let commission = to_decimal(&fill.commission).unwrap_or_default();
-                    let quote_quantity_commission = commission;
-
-                    trades_all_quote_quantity += price * base_quantity;
-                    trades_all_commission_quote_quantity += commission;
-
-                    let trade = Trade {
-                        price,
-                        base_quantity,
-                        quote_quantity_commission,
-                    };
-
-                    trades.push(trade)
+                    trades.push(Trade::with_sell_side(price, base_quantity, quote_quantity))
                 }
 
-                let income_quote_quantity =
-                    trades_all_quote_quantity - trades_all_commission_quote_quantity;
-
-                (trades, income_quote_quantity)
+                trades
             };
-
-            position.quote_quantity = position.quote_quantity + income_quote_quantity;
-            position.base_quantity = position.base_quantity - base_quantity;
 
             return Some(Order {
                 order_id: order.order_id,
                 symbol: order.symbol,
                 trades,
-                side: order.side,
-                timestamp: order.transact_time,
             });
         }
 
-        fn to_decimal(value: &String) -> Option<Decimal> {
+        fn dec(value: &String) -> Decimal {
             use std::str::FromStr;
 
-            Result::ok(Decimal::from_str(&value))
+            Decimal::from_str(&value).unwrap_or_default()
         }
     }
 
     pub mod models {
-        use binance::types::{OrderSide, Symbol};
+        use binance::types::Symbol;
         use ploy::{
-            math::Range,
-            types::{Price, Quantity},
+            position::{Position, Trade},
+            types::Price,
         };
         use serde::{Deserialize, Serialize};
 
@@ -218,24 +182,7 @@ pub mod post {
         pub struct Order {
             pub order_id: i64,
             pub symbol: Symbol,
-            pub side: OrderSide,
-            pub timestamp: u128,
             pub trades: Vec<Trade>,
-        }
-
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        pub struct Trade {
-            pub price: Price,
-            pub base_quantity: Quantity,
-            pub quote_quantity_commission: Quantity,
-        }
-
-        #[derive(Debug, Clone, Serialize, Deserialize)]
-        pub struct Position {
-            pub buying_price: Vec<Range<Price>>,
-            pub selling_price: Vec<Range<Price>>,
-            pub base_quantity: Quantity,
-            pub quote_quantity: Quantity,
         }
     }
 }
