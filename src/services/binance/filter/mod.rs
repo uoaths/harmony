@@ -4,9 +4,10 @@ pub mod spot;
 type SymbolFilterResult<T> = Result<T, error::SymbolFilterError>;
 
 mod current {
+    use ploy::types::Quantity;
+
     use super::SymbolFilterResult;
     use crate::services::binance::filter::error::SymbolFilterError;
-    use crate::services::binance::types::Quantity;
 
     pub fn filter_precision<'a>(
         quantity: &'a Quantity,
@@ -27,4 +28,9 @@ mod current {
     pub fn correct_precision(quantity: &Quantity, precision: u32) -> Quantity {
         quantity.trunc_with_scale(precision)
     }
+}
+
+fn dec(value: &str) -> Result<ploy::types::Decimal, ploy::error::Error> {
+    use std::str::FromStr;
+    ploy::types::Decimal::from_str(value)
 }

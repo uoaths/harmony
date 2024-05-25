@@ -13,9 +13,10 @@ services = [
 ]
 
 service-binance = [
-    "dep:binance",
-    "dep:rust_decimal"
+    "dep:ploy",
+    "dep:binance"
 ]
+
 service-crypto = [
     "dep:ethers",
     "dep:bigdecimal",
@@ -43,5 +44,5 @@ bigdecimal = { version = "0.4", default-features = false, optional = true }
 lazy_static = { version = "1.4", default-features = false, optional = true }
 
 # service binance features
-rust_decimal = { version = "1.35", features = ["serde-with-str"], default-features = false, optional = true }
+ploy = { git = "https://github.com/uoaths/ploy.git", branch = "main", default-features = false, optional = true }
 binance = { git = "https://github.com/uoaths/binance.git", branch = "main", default-features = false, optional = true }

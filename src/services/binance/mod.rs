@@ -1,21 +1,7 @@
 pub mod filter;
-pub mod math;
-pub mod ploy;
 
 use std::{error::Error, time::Duration};
-
-use binance::prelude::*;
-
-pub mod types {
-    pub use rust_decimal::Decimal;
-
-    pub type Symbol = String;
-    pub type Quantity = Decimal;
-    pub type Price = Decimal;
-
-    pub type BaseQuantity = Quantity;
-    pub type QuoteQuantity = Quantity;
-}
+use binance::prelude::{Client, ClientBuilder};
 
 pub fn client() -> Result<Client, Box<dyn Error>> {
     let result = ClientBuilder::new().build()?;
@@ -39,8 +25,7 @@ pub mod order {
         prelude::Client,
         types::{OrderResponseFull, OrderSide, Symbol},
     };
-
-    use super::types::Quantity;
+    use ploy::types::Quantity;
 
     pub async fn place_buying_market_order_with_quote(
         client: &Client,
