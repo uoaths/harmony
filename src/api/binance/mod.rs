@@ -4,6 +4,11 @@ pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
     use axum::routing::{get, post};
     use axum::Router;
 
+    let router_plot = Router::new().route(
+        spot::plot::post::PATH,
+        post(spot::plot::post::handler::handler),
+    );
+
     let router_price = Router::new().route(
         spot::price::get::PATH,
         get(spot::price::get::handler::handler),
@@ -51,5 +56,6 @@ pub fn router(state: std::sync::Arc<crate::api::State>) -> axum::Router {
         .merge(router_normal)
         .merge(router_order)
         .merge(router_price)
+        .merge(router_plot)
         .with_state(state)
 }

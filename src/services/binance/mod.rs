@@ -52,3 +52,60 @@ pub mod order {
             .await
     }
 }
+
+pub mod plot {
+    use binance::types::SymbolInfo;
+    use ploy::position::{Position, Trade};
+    use ploy::types::{BaseQuantity, Decimal, Price, QuoteQuantity};
+
+    use super::filter;
+
+    fn buy(
+        commission: Decimal,
+        norms: SymbolInfo,
+    ) -> impl Fn(&Price, &QuoteQuantity) -> Option<BaseQuantity> {
+        move |price: &Price, quantity: &QuoteQuantity| {
+            if price > &Decimal::ZERO {
+                let quantity =
+                    &filter::spot::quote_quantity::correct(&norms, price, quantity).ok()?;
+                filter::spot::quote_quantity::filter(&norms, price, quantity).ok()?;
+                return Some((quantity / price) * (Decimal::ONE - commission));
+            }
+
+            None
+        }
+    }
+
+    fn sell(
+        commission: Decimal,
+        norms: SymbolInfo,
+    ) -> impl Fn(&Price, &BaseQuantity) -> Option<QuoteQuantity> {
+        move |price: &Price, quantity: &BaseQuantity| {
+            if price > &Decimal::ZERO {
+                let quantity =
+                    &filter::spot::base_quantity::correct(&norms, price, quantity).ok()?;
+                filter::spot::base_quantity::filter(&norms, price, quantity).ok()?;
+                return Some((quantity * price) * (Decimal::ONE - commission));
+            }
+
+            None
+        }
+    }
+
+    pub fn profit(
+        positions: &Vec<Position>,
+        norms: &SymbolInfo,
+        commission: &Decimal,
+    ) -> Option<QuoteQuantity> {
+        let mut trades = Vec::new();
+        for position in positions {
+            let t = position.min_profit_trades(
+                &buy(*commission, norms.clone()),
+                &sell(*commission, norms.clone()),
+            )?;
+            trades.extend(t);
+        }
+
+        Some(Trade::profit(&trades).1)
+    }
+}
