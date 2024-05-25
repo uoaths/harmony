@@ -105,6 +105,26 @@ impl Trade {
             quantity.clone(),
         ))
     }
+
+    pub fn profit(value: &Vec<Self>) -> (BaseQuantity, QuoteQuantity) {
+        let mut base_quantity = BaseQuantity::ZERO;
+        let mut quote_quantity = QuoteQuantity::ZERO;
+        
+        for trade in value.iter() {
+            match trade.side {
+                TradeSide::Buy => {
+                    base_quantity += trade.base_quantity;
+                    quote_quantity -= trade.quote_quantity;
+                },
+                TradeSide::Sell => {
+                    base_quantity -= trade.base_quantity;
+                    quote_quantity += trade.quote_quantity;
+                }
+            }
+        }
+
+        (base_quantity, quote_quantity)
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Deserialize)]
@@ -186,7 +206,62 @@ impl Position {
 }
 
 #[cfg(test)]
-mod tests {
+mod tests_trade {
+    use crate::services::binance::types::Decimal;
+
+    use super::Trade;
+
+    fn dec(value: &str) -> Decimal {
+        use std::str::FromStr;
+        Decimal::from_str(value).unwrap()
+    }
+    
+    #[test]
+    fn test_profit() {
+        let trades = vec![
+                Trade::with_sell_side(dec("210"), dec("5"), dec("1050")),
+                Trade::with_buy_side(dec("80"), dec("13.375"), dec("1070")),
+                Trade::with_sell_side(dec("210"), dec("13.375"), dec("2808.75"))
+        ];
+
+        assert_eq!(Trade::profit(&trades), (dec("-5"), dec("2788.75")));
+
+        let trades = vec![
+            Trade::with_buy_side(dec("50"), dec("0.3996"), dec("20.0")),
+            Trade::with_sell_side(dec("200"), dec("0.3996"), dec("79.8400800"))
+        ];
+
+        assert_eq!(Trade::profit(&trades), (dec("0"), dec("59.8400800")));
+
+        let trades = vec![
+            Trade::with_buy_side(dec("50"), dec("0.3996"), dec("20.0")),
+            Trade::with_sell_side(dec("200"), dec("0.3996"), dec("79.8400800")),
+            Trade::with_buy_side(dec("50"), dec("9.99"), dec("500.0")),
+        ];
+
+        assert_eq!(Trade::profit(&trades), (dec("9.99"), dec("-440.1599200")));
+
+        let trades = vec![
+            Trade::with_buy_side(dec("50"), dec("0.3996"), dec("20.0")),
+            Trade::with_sell_side(dec("200"), dec("0.3996"), dec("79.8400800")),
+            Trade::with_buy_side(dec("50"), dec("9.99"), dec("500.0")),
+            Trade::with_sell_side(dec("200"), dec("9.99"), dec("1996.002")),
+        ];
+
+        assert_eq!(Trade::profit(&trades), (dec("0"), dec("1555.8420800")));
+
+        let trades = vec![
+            Trade::with_buy_side(dec("50"), dec("0.3996"), dec("20.0")),
+            Trade::with_sell_side(dec("200"), dec("0.3996"), dec("79.8400800")),
+            Trade::with_buy_side(dec("50"), dec("0.3996"), dec("20.0")),
+        ];
+
+        assert_eq!(Trade::profit(&trades), (dec("0.3996"), dec("39.8400800")));
+    }
+}
+
+#[cfg(test)]
+mod tests_position {
     use crate::services::binance::{
         math::Range,
         ploy::Trade,
