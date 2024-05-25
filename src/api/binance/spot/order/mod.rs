@@ -90,7 +90,7 @@ pub mod post {
                     position.base_quantity += (base_quantity - base_quantity_commission);
                     position.quote_quantity -= quote_quantity;
 
-                    trades.push(Trade::with_buy_side(price, base_quantity, quote_quantity))
+                    trades.push(Trade::with_buy_side(price, base_quantity - base_quantity_commission, quote_quantity))
                 }
 
                 trades
