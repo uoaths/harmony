@@ -2277,7 +2277,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 [[package]]
 name = "ploy"
 version = "0.1.0"
-source = "git+https://github.com/uoaths/ploy.git?branch=main#e1f5da621faffdb0d6b976718540da87973fa095"
+source = "git+https://github.com/uoaths/ploy.git?branch=main#3d8863287b53b469e0ad8e91416d410beb95c025"
 dependencies = [
  "rust_decimal",
  "serde",
