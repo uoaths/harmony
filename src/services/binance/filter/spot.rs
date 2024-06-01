@@ -1,3 +1,49 @@
+use binance::types::SymbolInfo;
+
+use crate::services::binance::ConvertFilter;
+
+impl ConvertFilter for SymbolInfo {
+    fn filter_base_quantity(
+        &self,
+        price: &ploy::types::Price,
+        quantity: &ploy::types::BaseQuantity,
+    ) -> Result<(), super::error::SymbolFilterError> {
+        let result = base_quantity::filter(&self, price, quantity)?;
+
+        Ok(result)
+    }
+
+    fn filter_quote_quantity(
+        &self,
+        price: &ploy::types::Price,
+        quantity: &ploy::types::QuoteQuantity,
+    ) -> Result<(), super::error::SymbolFilterError> {
+        let result = quote_quantity::filter(&self, price, quantity)?;
+
+        Ok(result)
+    }
+
+    fn correct_base_quantity(
+        &self,
+        price: &ploy::types::Price,
+        quantity: &ploy::types::BaseQuantity,
+    ) -> Result<ploy::types::BaseQuantity, super::error::SymbolFilterError> {
+        let result = base_quantity::correct(&self, price, quantity)?;
+
+        Ok(result)
+    }
+
+    fn correct_quote_quantity(
+        &self,
+        price: &ploy::types::Price,
+        quantity: &ploy::types::QuoteQuantity,
+    ) -> Result<ploy::types::QuoteQuantity, super::error::SymbolFilterError> {
+        let result = quote_quantity::correct(&self, price, quantity)?;
+
+        Ok(result)
+    }
+}
+
 pub mod base_quantity {
     use binance::types::{
         SymbolFilter, SymbolInfo, SymbolLotSizeFilter, SymbolMarketLotSizeFilter,

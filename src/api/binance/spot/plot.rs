@@ -4,37 +4,61 @@ pub mod post {
     pub mod handler {
         use std::str::FromStr;
 
+        use ploy::trade::evaluate::Evaluater;
         use ploy::types::Decimal;
 
         use crate::api::http::request::Json;
         use crate::api::http::response::{Response, ResponseResult};
         use crate::api::http::trip::Trip;
 
-        use crate::services::binance::{client, plot};
+        use crate::services::binance::{client, BinanceSpotTest};
 
-        use super::models::{Payload, ResponseBody};
+        use super::models::{Analyzer, Payload, ResponseBody};
 
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<ResponseBody> {
-            use ploy::Ploy;
+            use ploy::plot::Plot;
 
             let client = client()?;
-            let exchange = client.exchange_info(&p.symbol).await?;
-            let normal = match exchange.symbols.first() {
-                Some(v) => v,
-                None => return Err(Response::bad_request("exchange info not found".into())),
+            let normal = {
+                let mut info = client.exchange_info(&p.symbol).await?;
+                match info.symbols.pop() {
+                    Some(v) => v,
+                    None => return Err(Response::bad_request("exchange info not found".into())),
+                }
             };
 
             let commission = p.commission.unwrap_or(Decimal::from_str("0.001").unwrap());
-            let mut positions = Vec::new();
 
-            if let Some(grid) = p.grid {
-                positions = grid.trap()
-            }
+            let positions = {
+                let mut positions = Vec::new();
+                if let Some(grid) = p.grid {
+                    positions = grid.trap()
+                }
+
+                positions
+            };
+
+            let analyzer = {
+                let mut analyzer = Vec::new();
+                let positions = positions.clone();
+                let spot_agent = BinanceSpotTest::new(normal, commission);
+
+                for mut position in positions.into_iter() {
+                    let trades = position.min_profit_trades(&spot_agent).await?;
+                    analyzer.push(Analyzer {
+                        evaluate: trades.evaluate().await,
+                        trades,
+                        position,
+                    });
+                }
+
+                analyzer
+            };
 
             Ok(Response::ok(ResponseBody {
-                profit: plot::profit(&positions, normal, &commission),
-                positions: positions,
+                positions,
+                analyzer,
             }))
         }
     }
@@ -43,8 +67,8 @@ pub mod post {
         use binance::types::Symbol;
         use ploy::{
             plot::grid::Grid,
-            position::Position,
-            types::{Decimal, QuoteQuantity},
+            trade::{evaluate::Evaluate, position::Position, Trade},
+            types::Decimal,
         };
         use serde::{Deserialize, Serialize};
 
@@ -57,8 +81,15 @@ pub mod post {
 
         #[derive(Debug, Clone, Serialize, Deserialize)]
         pub struct ResponseBody {
-            pub profit: Option<QuoteQuantity>,
+            pub analyzer: Vec<Analyzer>,
             pub positions: Vec<Position>,
+        }
+
+        #[derive(Debug, Clone, Serialize, Deserialize)]
+        pub struct Analyzer {
+            pub evaluate: Evaluate,
+            pub trades: Vec<Trade>,
+            pub position: Position,
         }
     }
 }
