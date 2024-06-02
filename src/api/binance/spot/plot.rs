@@ -35,6 +35,10 @@ pub mod post {
                     positions = grid.assign_position()
                 }
 
+                if let Some(grid) = p.grid_percent {
+                    positions = grid.assign_position()
+                }
+
                 positions
             };
 
@@ -65,7 +69,7 @@ pub mod post {
     pub mod models {
         use binance::types::Symbol;
         use plot::{
-            strategy::grid::Grid,
+            strategy::{grid::Grid, grid_percent::GridPercent},
             trade::{evaluate::Evaluate, position::Position, Trade},
             types::Decimal,
         };
@@ -76,6 +80,7 @@ pub mod post {
             pub symbol: Symbol,
             pub commission: Option<Decimal>,
             pub grid: Option<Grid>,
+            pub grid_percent: Option<GridPercent>,
         }
 
         #[derive(Debug, Clone, Serialize, Deserialize)]
