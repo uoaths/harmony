@@ -9,7 +9,8 @@ pub mod post {
     pub mod handler {
         use std::str::FromStr;
 
-        use ploy::types::Decimal;
+        use plot::trade::Executor;
+        use plot::types::Decimal;
 
         use crate::api::http::request::Json;
         use crate::api::http::response::{Response, ResponseResult};
@@ -38,10 +39,7 @@ pub mod post {
             let mut order = Vec::new();
             let spot_agent = BinanceSpot::new(normal, client);
             for position in p.positions.iter_mut() {
-                let trades = position
-                    .trade(&spot_agent, &price)
-                    .await
-                    .unwrap_or_default();
+                let trades = position.trap(&spot_agent, &price).await.unwrap_or_default();
                 order.push(Order {
                     order_id: 1,
                     symbol: p.symbol.clone(),
@@ -60,7 +58,7 @@ pub mod post {
 
     pub mod models {
         use binance::types::Symbol;
-        use ploy::{trade::position::Position, trade::Trade, types::Price};
+        use plot::{trade::position::Position, trade::Trade, types::Price};
         use serde::{Deserialize, Serialize};
 
         #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -4,7 +4,7 @@ pub mod spot;
 type SymbolFilterResult<T> = Result<T, error::SymbolFilterError>;
 
 mod current {
-    use ploy::types::Quantity;
+    use plot::types::Quantity;
 
     use super::SymbolFilterResult;
     use crate::services::binance::filter::error::SymbolFilterError;
@@ -30,7 +30,7 @@ mod current {
     }
 }
 
-fn dec(value: &str) -> Result<ploy::types::Decimal, ploy::error::Error> {
+fn dec(value: &str) -> Result<plot::types::Decimal, plot::error::Error> {
     use std::str::FromStr;
-    ploy::types::Decimal::from_str(value)
+    plot::types::Decimal::from_str(value)
 }

@@ -24,8 +24,8 @@ impl std::fmt::Display for SymbolFilterError {
     }
 }
 
-impl From<ploy::error::Error> for SymbolFilterError {
-    fn from(value: ploy::error::Error) -> Self {
+impl From<plot::error::Error> for SymbolFilterError {
+    fn from(value: plot::error::Error) -> Self {
         Self::Decimal(value.to_string())
     }
 }

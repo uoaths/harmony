@@ -31,7 +31,7 @@ pub mod post {
 
     pub mod models {
         use binance::types::{OrderResponseFull, Symbol};
-        use ploy::types::Quantity;
+        use plot::types::Quantity;
         use serde::{Deserialize, Serialize};
 
         #[derive(Debug, Clone, Serialize, Deserialize)]

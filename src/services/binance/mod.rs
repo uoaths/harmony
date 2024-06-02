@@ -5,7 +5,7 @@ use binance::{
     types::{OrderSide, SymbolInfo},
 };
 use filter::error::SymbolFilterError;
-use ploy::{
+use plot::{
     trade::{Trade, Trader},
     types::{BaseQuantity, Decimal, Price, QuoteQuantity},
 };
@@ -155,8 +155,8 @@ pub trait ConvertFilter {
 mod order_extend {
     use super::ConvertTrades;
     use binance::types::{OrderResponseFull, OrderSide};
-    use ploy::trade::Trade;
-    use ploy::types::Decimal;
+    use plot::trade::Trade;
+    use plot::types::Decimal;
 
     impl ConvertTrades for OrderResponseFull {
         fn to_trades(&self) -> Vec<Trade> {

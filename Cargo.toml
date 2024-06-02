@@ -13,7 +13,7 @@ services = [
 ]
 
 service-binance = [
-    "dep:ploy",
+    "dep:plot",
     "dep:binance"
 ]
 
@@ -44,5 +44,5 @@ bigdecimal = { version = "0.4", default-features = false, optional = true }
 lazy_static = { version = "1.4", default-features = false, optional = true }
 
 # service binance features
-ploy = { git = "https://github.com/uoaths/ploy.git", branch = "main", default-features = false, optional = true }
+plot = { git = "https://github.com/uoaths/plot.git", branch = "main", default-features = false, optional = true }
 binance = { git = "https://github.com/uoaths/binance.git", branch = "main", default-features = false, optional = true }
