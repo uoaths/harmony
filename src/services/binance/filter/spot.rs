@@ -5,8 +5,8 @@ use crate::services::binance::ConvertFilter;
 impl ConvertFilter for SymbolInfo {
     fn filter_base_quantity(
         &self,
-        price: &ploy::types::Price,
-        quantity: &ploy::types::BaseQuantity,
+        price: &plot::types::Price,
+        quantity: &plot::types::BaseQuantity,
     ) -> Result<(), super::error::SymbolFilterError> {
         let result = base_quantity::filter(&self, price, quantity)?;
 
@@ -15,8 +15,8 @@ impl ConvertFilter for SymbolInfo {
 
     fn filter_quote_quantity(
         &self,
-        price: &ploy::types::Price,
-        quantity: &ploy::types::QuoteQuantity,
+        price: &plot::types::Price,
+        quantity: &plot::types::QuoteQuantity,
     ) -> Result<(), super::error::SymbolFilterError> {
         let result = quote_quantity::filter(&self, price, quantity)?;
 
@@ -25,9 +25,9 @@ impl ConvertFilter for SymbolInfo {
 
     fn correct_base_quantity(
         &self,
-        price: &ploy::types::Price,
-        quantity: &ploy::types::BaseQuantity,
-    ) -> Result<ploy::types::BaseQuantity, super::error::SymbolFilterError> {
+        price: &plot::types::Price,
+        quantity: &plot::types::BaseQuantity,
+    ) -> Result<plot::types::BaseQuantity, super::error::SymbolFilterError> {
         let result = base_quantity::correct(&self, price, quantity)?;
 
         Ok(result)
@@ -35,9 +35,9 @@ impl ConvertFilter for SymbolInfo {
 
     fn correct_quote_quantity(
         &self,
-        price: &ploy::types::Price,
-        quantity: &ploy::types::QuoteQuantity,
-    ) -> Result<ploy::types::QuoteQuantity, super::error::SymbolFilterError> {
+        price: &plot::types::Price,
+        quantity: &plot::types::QuoteQuantity,
+    ) -> Result<plot::types::QuoteQuantity, super::error::SymbolFilterError> {
         let result = quote_quantity::correct(&self, price, quantity)?;
 
         Ok(result)
@@ -49,7 +49,7 @@ pub mod base_quantity {
         SymbolFilter, SymbolInfo, SymbolLotSizeFilter, SymbolMarketLotSizeFilter,
         SymbolNotionalFilter,
     };
-    use ploy::types::{Decimal, Price, Quantity};
+    use plot::types::{Decimal, Price, Quantity};
 
     use crate::services::binance::filter::error::SymbolFilterError;
     use crate::services::binance::filter::{self, SymbolFilterResult};
@@ -217,7 +217,7 @@ pub mod base_quantity {
 
 pub mod quote_quantity {
     use binance::types::{SymbolFilter, SymbolInfo, SymbolMinNotionalFilter, SymbolNotionalFilter};
-    use ploy::types::{Price, Quantity};
+    use plot::types::{Price, Quantity};
 
     use crate::services::binance::filter::error::SymbolFilterError;
     use crate::services::binance::filter::{self, SymbolFilterResult};
@@ -307,7 +307,7 @@ pub mod quote_quantity {
 #[cfg(test)]
 mod tests {
     use binance::types::SymbolInfo;
-    use ploy::types::Decimal;
+    use plot::types::Decimal;
 
     const SYMBOL_PRICE: &str = "3685.96000000";
     const SYMBOL_NORMS: &str = r#"{"allowTrailingStop":true,"allowedSelfTradePreventionModes":["EXPIRE_TAKER","EXPIRE_MAKER","EXPIRE_BOTH"],"baseAsset":"ETH","baseAssetPrecision":8,"baseCommissionPrecision":8,"cancelReplaceAllowed":true,"defaultSelfTradePreventionMode":"EXPIRE_MAKER","filters":[{"filterType":"PRICE_FILTER","maxPrice":"1000000.00000000","minPrice":"0.01000000","tickSize":"0.01000000"},{"filterType":"LOT_SIZE","maxQty":"9000.00000000","minQty":"0.00010000","stepSize":"0.00010000"},{"filterType":"ICEBERG_PARTS","limit":10},{"filterType":"MARKET_LOT_SIZE","maxQty":"1701.08445000","minQty":"0.00000000","stepSize":"0.00000000"},{"filterType":"TRAILING_DELTA","maxTrailingAboveDelta":2000,"maxTrailingBelowDelta":2000,"minTrailingAboveDelta":10,"minTrailingBelowDelta":10},{"askMultiplierDown":"0.2","askMultiplierUp":"5","avgPriceMins":5,"bidMultiplierDown":"0.2","bidMultiplierUp":"5","filterType":"PERCENT_PRICE_BY_SIDE"},{"applyMaxToMarket":false,"applyMinToMarket":true,"avgPriceMins":5,"filterType":"NOTIONAL","maxNotional":"9000000.00000000","minNotional":"5.00000000"},{"filterType":"MAX_NUM_ORDERS","maxNumOrders":200},{"filterType":"MAX_NUM_ALGO_ORDERS","maxNumAlgoOrders":5}],"icebergAllowed":true,"isMarginTradingAllowed":true,"isSpotTradingAllowed":true,"ocoAllowed":true,"orderTypes":["LIMIT","LIMIT_MAKER","MARKET","STOP_LOSS_LIMIT","TAKE_PROFIT_LIMIT"],"otoAllowed":false,"permissionSets":[["SPOT","MARGIN","TRD_GRP_004","TRD_GRP_005","TRD_GRP_006","TRD_GRP_009","TRD_GRP_010","TRD_GRP_011","TRD_GRP_012","TRD_GRP_013","TRD_GRP_014","TRD_GRP_015","TRD_GRP_016","TRD_GRP_017","TRD_GRP_018","TRD_GRP_019","TRD_GRP_020","TRD_GRP_021","TRD_GRP_022","TRD_GRP_023","TRD_GRP_024","TRD_GRP_025"]],"permissions":[],"quoteAsset":"USDT","quoteAssetPrecision":8,"quoteCommissionPrecision":8,"quoteOrderQtyMarketAllowed":true,"quotePrecision":8,"status":"TRADING","symbol":"ETHUSDT"}"#;

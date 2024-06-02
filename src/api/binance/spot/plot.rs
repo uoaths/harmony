@@ -4,8 +4,9 @@ pub mod post {
     pub mod handler {
         use std::str::FromStr;
 
-        use ploy::trade::evaluate::Evaluater;
-        use ploy::types::Decimal;
+        use plot::strategy::Strategy;
+        use plot::trade::evaluate::Evaluater;
+        use plot::types::Decimal;
 
         use crate::api::http::request::Json;
         use crate::api::http::response::{Response, ResponseResult};
@@ -17,8 +18,6 @@ pub mod post {
 
         #[tracing::instrument(skip(_c))]
         pub async fn handler(_c: Trip, Json(p): Json<Payload>) -> ResponseResult<ResponseBody> {
-            use ploy::plot::Plot;
-
             let client = client()?;
             let normal = {
                 let mut info = client.exchange_info(&p.symbol).await?;
@@ -33,7 +32,7 @@ pub mod post {
             let positions = {
                 let mut positions = Vec::new();
                 if let Some(grid) = p.grid {
-                    positions = grid.trap()
+                    positions = grid.assign_position()
                 }
 
                 positions
@@ -65,8 +64,8 @@ pub mod post {
 
     pub mod models {
         use binance::types::Symbol;
-        use ploy::{
-            plot::grid::Grid,
+        use plot::{
+            strategy::grid::Grid,
             trade::{evaluate::Evaluate, position::Position, Trade},
             types::Decimal,
         };

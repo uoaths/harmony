@@ -1425,7 +1425,7 @@ dependencies = [
  "binance",
  "ethers",
  "lazy_static",
- "ploy",
+ "plot",
  "serde",
  "serde_json",
  "tokio",
@@ -2275,9 +2275,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
-name = "ploy"
+name = "plot"
 version = "0.1.0"
-source = "git+https://github.com/uoaths/ploy.git?branch=main#af14fedd92a1f2d6db9a3b35a3329f8fdad295d4"
+source = "git+https://github.com/uoaths/plot.git?branch=main#054b5e313d95bdc77e8d83cdcd8f88045caae836"
 dependencies = [
  "rust_decimal",
  "serde",
