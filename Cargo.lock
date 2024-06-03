@@ -2277,7 +2277,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 [[package]]
 name = "plot"
 version = "0.1.0"
-source = "git+https://github.com/uoaths/plot.git?branch=main#263db9a7d03df8385d7342458b2fbaa638f792c2"
+source = "git+https://github.com/uoaths/plot.git?branch=main#cdde7c3bef12962274520bd99971d726c8f7fd38"
 dependencies = [
  "rust_decimal",
  "serde",
