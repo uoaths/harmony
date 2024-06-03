@@ -60,7 +60,7 @@ impl Trader for BinanceSpotTest {
     ) -> Result<Vec<Trade>, Box<dyn Error>> {
         let base_quantity = self.normal.correct_base_quantity(price, quantity)?;
         self.normal.filter_base_quantity(price, &base_quantity)?;
-        let quote_quantity = (quantity * price) * (Decimal::ONE - self.commission);
+        let quote_quantity = (base_quantity * price) * (Decimal::ONE - self.commission);
         let quote_quantity =
             quote_quantity.trunc_with_scale(self.normal.quote_asset_precision.into());
         let trade = Trade::with_sell(price.clone(), base_quantity, quote_quantity);
