@@ -41,7 +41,7 @@ tracing-subscriber = { version = "0.3", features = ["fmt"], default-features = f
 # service crypto features
 ethers = { version = "2.0", features = ["ws", "rustls"], default-features = false, optional = true }
 bigdecimal = { version = "0.4", default-features = false, optional = true }
-lazy_static = { version = "1.4", default-features = false, optional = true }
+lazy_static = { version = "1.5", default-features = false, optional = true }
 
 # service binance features
 plot = { git = "https://github.com/uoaths/plot.git", branch = "main", default-features = false, optional = true }
