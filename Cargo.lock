@@ -256,7 +256,7 @@ dependencies = [
 [[package]]
 name = "binance"
 version = "0.1.0"
-source = "git+https://github.com/uoaths/binance.git?branch=main#324217dbb5941af7d64e24d36beb7dcb08e06f1e"
+source = "git+https://github.com/uoaths/binance.git?branch=main#307c8ba543626a03e05c69906dfe7b35e13ba5e0"
 dependencies = [
  "reqwest 0.12.4",
  "ring 0.17.8",
